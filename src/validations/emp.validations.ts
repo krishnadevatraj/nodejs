@@ -49,12 +49,12 @@ export const registerSchema = {
     }),
 };
 
-export const validateEmailSchema={
-    body:joi.object({
-        email:joi.string().required().email().empty('').messages({
+export const validateEmailSchema = {
+    body: joi.object({
+        email: joi.string().required().email().empty('').messages({
             'string.email': 'Please provide a valid email address',
             'any.required': 'Email is required',
             'string.empty': 'Email cannot be empty',
         }),
-    });
-}
+    }),
+};
