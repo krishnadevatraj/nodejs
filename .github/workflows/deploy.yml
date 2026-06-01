@@ -35,4 +35,4 @@ jobs:
                       git pull origin dev
                       npm install
                       npm run build
-                      pm2 restart nodejsapp
+                      npm run start
