@@ -25,9 +25,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // app.use(rateLimiter);
-app.use('/', (req, res) => {
-    res.send('Server is running');
-});
+// app.use('/', (req, res) => {
+//     res.send('Server is running');
+// });
 app.use('/api', auth_routes);
 app.use('/api', employee_routes);
 app.use('/api', collection_routes);

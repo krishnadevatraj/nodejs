@@ -3,8 +3,14 @@ import db from '../../database/db';
 import { tableNames } from '../../database/schema';
 
 export class authModel {
-    static async getUsersDetails(email: string) {
-        return db
+    static async getEmployeeDetails({
+        email,
+        empId,
+    }: {
+        email?: string;
+        empId?: number;
+    }) {
+        let query = db
             .selectFrom(tableNames.users)
             .select([
                 'id',
@@ -13,9 +19,14 @@ export class authModel {
                 'middle_name',
                 'email',
                 'password',
-            ])
-            .where('email', '=', email)
-            .executeTakeFirst();
+            ]);
+        if (email) {
+            query = query.where('email', '=', email);
+        }
+        if (empId) {
+            query = query.where('id', '=', empId);
+        }
+        return query.executeTakeFirst();
     }
 
     static async saveRefreshTokenDb(userId: number, refreshToken: string) {

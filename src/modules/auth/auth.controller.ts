@@ -6,41 +6,42 @@ export class authController {
     static async login(req: Request, res: Response, next: NextFunction) {
         const userCrdentials = req.body;
 
-        const userDetails = await authService.login(userCrdentials);
+        const response = await authService.login(userCrdentials);
 
-        res.cookie('access_token', userDetails.accessToken, {
+        res.cookie('refresh_token', response.refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 7 * 24 * 60 * 60 * 1000,
+            maxAge: 60 * 60 * 1000,
             sameSite: 'strict',
         });
         res.json({
-            status: 'success',
-            first_name: userDetails.user.first_name,
-            last_name: userDetails.user.last_name,
-            email: userDetails.user.email,
-            message: 'Login Successfull',
-        });
-    }
-
-    static async refreshToken(req: Request, res: Response) {
-        const oldToken = req.cookies.refresh_token;
-
-        const response = await authService.refreshToken(oldToken);
-
-        res.cookie('refresh_token', response.newRefreshTokenHash, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 1 * 60 * 1000,
-            sameSite: 'strict',
-            path: '/api/refresh-token',
-        });
-        res.status(200).json({
             status: 'success',
             access_token: response.accessToken,
             first_name: response.user.first_name,
             last_name: response.user.last_name,
             email: response.user.email,
+            message: 'Login Successfull',
+        });
+    }
+
+    static async refreshToken(req: Request, res: Response) {
+        const empId = Number(req.user?.id);
+
+        const response = await authService.refreshToken(empId);
+
+        res.cookie('refresh_token', response.newRefreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 60 * 60 * 1000,
+            sameSite: 'strict',
+            path: '/api/refresh-token',
+        });
+        res.status(200).json({
+            status: 'success',
+            access_token: response.newAccessToken,
+            first_name: response.emp.first_name,
+            last_name: response.emp.last_name,
+            email: response.emp.email,
             message: 'Token refreshed successfully',
         });
     }

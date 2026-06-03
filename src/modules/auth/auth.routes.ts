@@ -9,6 +9,7 @@ import {
 } from '../../validations/auth.validation';
 import { asynchHandler } from '../../utils/asynchHandler.utils';
 import authenticate from '../../middleware/auth.middleware';
+import verifyRefreshToken from '../../middleware/verifyRefreshToken.middleware';
 const router = express.Router();
 
 router.post(
@@ -18,7 +19,11 @@ router.post(
     asynchHandler(authController.login)
 );
 
-router.post('/refresh-token', asynchHandler(authController.refreshToken));
+router.post(
+    '/refresh-token',
+    verifyRefreshToken,
+    asynchHandler(authController.refreshToken)
+);
 
 router.post(
     '/send-password-link',

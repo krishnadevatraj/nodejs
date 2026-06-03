@@ -8,9 +8,9 @@ import { sendEmail } from '../../service/email.service';
 
 export class authService {
     static async login(userCrdentials: loginInterface) {
-        const userDetails = await authModel.getUsersDetails(
-            userCrdentials.email
-        );
+        const userDetails = await authModel.getEmployeeDetails({
+            email: userCrdentials.email,
+        });
 
         if (!userDetails) {
             throw new errorHandler(404, 'User not found');
@@ -26,10 +26,11 @@ export class authService {
         }
         const accessToken = jwtService.generateAccessToken({
             id: userDetails.id,
+            email: userDetails.email,
         });
-        // const refreshTokenHash = jwtService.generateRefreshToken({
-        //     id: userDetails.id,
-        // });
+        const refreshToken = jwtService.generateRefreshToken({
+            id: userDetails.id,
+        });
 
         // const newRefreshTokenHash = crypto
         //     .createHash('sha256')
@@ -38,38 +39,43 @@ export class authService {
 
         // await authModel.saveRefreshTokenDb(userDetails.id as number);
 
-        return { accessToken, user: userDetails };
+        return { accessToken, refreshToken, user: userDetails };
     }
 
-    static async refreshToken(oldRefreshToken: string) {
-        const userDetails = await authModel.getRefreshToken(oldRefreshToken);
+    static async refreshToken(empId: number) {
+        const empDetails = await authModel.getEmployeeDetails({
+            empId: empId,
+        });
 
-        if (userDetails.length === 0) {
-            throw new errorHandler(401, 'Invalid refresh token', false);
+        if (!empDetails) {
+            throw new errorHandler(404, 'Employee not found', false);
         }
 
         const newRefreshToken = jwtService.generateRefreshToken({
-            id: userDetails[0].id,
+            id: empId,
         });
-        const accessToken = jwtService.generateAccessToken({
-            id: userDetails[0].id,
+        const newAccessToken = jwtService.generateAccessToken({
+            id: empDetails.id,
+            email: empDetails.email,
         });
 
-        const newRefreshTokenHash = crypto
-            .createHash('sha256')
-            .update(newRefreshToken)
-            .digest('hex');
+        // const newRefreshTokenHash = crypto
+        //     .createHash('sha256')
+        //     .update(newRefreshToken)
+        //     .digest('hex');
 
-        await authModel.updateRefreshTokenDb(
-            userDetails[0].id as number,
-            newRefreshTokenHash as string
-        );
+        // await authModel.updateRefreshTokenDb(
+        //     empDetails[0].id as number,
+        //     newRefreshTokenHash as string
+        // );
 
-        return { accessToken, newRefreshTokenHash, user: userDetails[0] };
+        return { newAccessToken, newRefreshToken, emp: empDetails };
     }
 
     static async sendPasswordLink(email: string) {
-        const userDetails = await authModel.getUsersDetails(email);
+        const userDetails = await authModel.getEmployeeDetails({
+            email: email,
+        });
 
         if (!userDetails) {
             throw new errorHandler(404, 'User not found');

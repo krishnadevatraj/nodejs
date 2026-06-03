@@ -5,18 +5,31 @@ import { jwtService } from '../utils/jwt.utils';
 
 const authenticate = (req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = req.cookies?.access_token;
+        const authHeader = req.headers['authorization'];
+
+        if (Array.isArray(authHeader) || !authHeader) {
+            res.status(401).json({
+                message: 'Invalid or missing Authorization header',
+            });
+            return;
+        }
+
+        const token = authHeader?.split(' ')[1];
 
         if (!token) {
             return next(new errorHandler(401, 'Access token missing', false));
         }
 
-        const decodedJson = jwtService.verifyToken(token) as { id: string };
+        const decodedJson = jwtService.verifyToken(token) as {
+            id: string;
+            email: string;
+        };
 
         req.user = {
             id: decodedJson.id,
+            email: decodedJson.email,
         };
-        console.log(req.user);
+
         next();
     } catch (e: any) {
         if (e.name === 'TokenExpiredError') {
